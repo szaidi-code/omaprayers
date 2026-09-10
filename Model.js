@@ -55,15 +55,11 @@ var BAR_DISPLAYS = [
 // rather than staying English inside an otherwise Arabic panel.
 var UI_LABELS = {
   location: ["Location", "الموقع"],
-  detect: ["Detect", "تحديد"],
-  detectPrivacy: ["Detect asks wttr.in for an approximate city using your IP.", "يطلب تحديد الموقع مدينة تقريبية من wttr.in باستخدام عنوان IP الخاص بك."],
-  citySearch: ["Search for a city", "ابحث عن مدينة"],
-  citySearchPrivacy: ["City search sends your text to Open-Meteo.", "يرسل بحث المدينة النص الذي تكتبه إلى Open-Meteo."],
+  citySearch: ["Search by city or ZIP / postal code", "ابحث بالمدينة أو الرمز البريدي"],
+  citySearchPrivacy: ["Only what you type is sent, to Open-Meteo. Prayer times are calculated on this machine.", "يُرسل ما تكتبه فقط إلى Open-Meteo. تُحسب مواقيت الصلاة على هذا الجهاز."],
   searching: ["Searching…", "جاري البحث…"],
-  noMatches: ["No matching city", "لا توجد مدينة مطابقة"],
-  searchFailed: ["City search failed", "فشل البحث عن المدينة"],
-  detectFailed: ["Could not detect a location", "تعذر تحديد الموقع"],
-  detectHint: ["Detected from your connection — confirm it", "محدد من اتصالك — تأكيده"],
+  noMatches: ["No matching city or postal code", "لا توجد مدينة أو رمز بريدي مطابق"],
+  searchFailed: ["Location search failed", "فشل البحث عن الموقع"],
   calculation: ["Calculation", "الحساب"],
   method: ["Method", "طريقة الحساب"],
   asr: ["Asr", "العصر"],
@@ -288,9 +284,16 @@ function schoolLabel(school, language) {
 // result without a zone is therefore dropped rather than guessed at — a search
 // for "Springfield" spans two different zones, so the zone has to come from the
 // row the user actually picked.
-function parseLocationResults(raw) {
+// Open-Meteo answers a postal query with the city record whose postcodes list
+// contains that code, so the code itself has to be recovered from the list to
+// label the row: the reply's name field says "New York", not "10001". Records
+// that carry an exact match lead, because a fuzzy name hit on a numeric query
+// is the weaker answer. A name query sets no wanted code and keeps the
+// server's own ordering.
+function parseLocationResults(raw, query) {
   var data = parseEnvelope(raw)
   if (!data || !(data.results instanceof Array)) return []
+  var wanted = looksLikePostcode(query) ? normalizePostcode(query) : ""
   var out = []
   for (var i = 0; i < data.results.length; i++) {
     var result = data.results[i]
@@ -302,6 +305,14 @@ function parseLocationResults(raw) {
     var region = [text(result.admin1), text(result.country)]
       .filter(function(part) { return part !== "" })
       .join(", ")
+    var postcode = ""
+    if (wanted !== "" && result.postcodes instanceof Array) {
+      for (var p = 0; p < result.postcodes.length; p++) {
+        if (normalizePostcode(result.postcodes[p]) !== wanted) continue
+        postcode = text(result.postcodes[p])
+        break
+      }
+    }
     out.push({
       name: text(result.name),
       region: region,
@@ -309,20 +320,39 @@ function parseLocationResults(raw) {
       countryCode: text(result.country_code).toUpperCase(),
       latitude: latitude,
       longitude: longitude,
-      timezone: text(result.timezone)
+      timezone: text(result.timezone),
+      postcode: postcode
     })
   }
-  return out
+  if (wanted === "") return out
+  // Partitioned rather than sorted: this keeps the server's relative order
+  // inside each group without depending on the sort being stable.
+  var exact = []
+  var fuzzy = []
+  for (var j = 0; j < out.length; j++)
+    (out[j].postcode !== "" ? exact : fuzzy).push(out[j])
+  return exact.concat(fuzzy)
 }
 
-// wttr.in answers `?format=%l` with "City, Region, CC". Only the leading
-// segment is kept, and it is used to seed the search box rather than treated as
-// a location: the address it derives from the connection can be a long way from
-// where the user actually is.
-function detectedLocationQuery(raw) {
-  var value = text(raw).replace(/^\s+|\s+$/g, "")
-  if (value === "") return ""
-  return value.split(",")[0].replace(/\+/g, " ").replace(/^\s+|\s+$/g, "")
+// Postal codes are compared with separators and case removed, so "sw1a 1aa"
+// and "SW1A1AA" are one code.
+function normalizePostcode(value) {
+  return text(value).toUpperCase().replace(/[\s-]/g, "")
+}
+
+// A postal query is short, carries a digit, and comes in at most two groups:
+// "10001", "SW1A 1AA", "K1A-0B1". Letters are allowed because plenty of postal
+// codes have them, but a place whose name merely contains a number — "6th of
+// October City" — must not be read as a code. A false positive costs nothing
+// beyond which row gets annotated and ordered first: the committed location
+// always comes from the row the user picks.
+function looksLikePostcode(value) {
+  var groups = text(value).replace(/^[\s-]+|[\s-]+$/g, "").split(/[\s-]+/)
+  if (groups.length > 2) return false
+  for (var i = 0; i < groups.length; i++)
+    if (!/^[A-Za-z0-9]+$/.test(groups[i])) return false
+  var joined = normalizePostcode(value)
+  return /\d/.test(joined) && joined.length >= 3 && joined.length <= 10
 }
 
 // The four location keys are written as one unit. A partial write would leave
@@ -732,7 +762,7 @@ if (typeof module !== "undefined") {
     nextInRing: nextInRing,
     valueInRing: valueInRing,
     parseLocationResults: parseLocationResults,
-    detectedLocationQuery: detectedLocationQuery,
+    looksLikePostcode: looksLikePostcode,
     locationSettings: locationSettings,
     dayForDate: dayForDate,
     today: today,

@@ -9,10 +9,12 @@ import "Model.js" as Model
 // keystroke. Picking a row commits label, coordinates, and timezone as one unit
 // through host.commitLocation.
 //
-// The Detect button fills the field from the connection's apparent city and
-// leaves it for the user to confirm. It never commits: the derived address can
-// be a long way off, and a wrong location produces confidently wrong prayer
-// times rather than a visible failure.
+// The field takes a city name or a ZIP / postal code. Open-Meteo answers both,
+// and its reply carries the IANA timezone, so a committed row is all the
+// offline engine needs to recompute. Nothing is inferred from the connection:
+// a location derived from an IP address can be a long way off, and a wrong
+// location produces confidently wrong prayer times rather than a visible
+// failure.
 Column {
   id: locationRoot
 
@@ -38,60 +40,20 @@ Column {
 
   Connections {
     target: locationRoot.host
-    // The detected term arrives here rather than being pushed into settings.
-    function onLocationDetected(query) {
-      cityField.text = query
-      locationRoot.runSearch()
-      locationRoot.focusField()
-    }
     function onLocationSearchRequested() {
       locationRoot.focusField()
     }
   }
 
-  Item {
-    width: parent.width
-    height: Math.max(currentLocation.implicitHeight, detectButton.height)
-
-    Text {
-      textFormat: Text.PlainText
-      id: currentLocation
-      anchors.left: parent.left
-      anchors.right: detectButton.left
-      anchors.rightMargin: Style.space(8)
-      anchors.verticalCenter: parent.verticalCenter
-      text: locationRoot.host.displayLocation + "  ·  " + locationRoot.host.timezone
-      color: locationRoot.host.dim
-      font.family: locationRoot.host.nameFontFamily
-      font.pixelSize: Style.font.bodySmall
-      elide: Text.ElideRight
-    }
-
-    Button {
-      id: detectButton
-      anchors.right: parent.right
-      anchors.verticalCenter: parent.verticalCenter
-      text: locationRoot.host.detectingLocation
-        ? Model.uiLabel("searching", locationRoot.host.language)
-        : Model.uiLabel("detect", locationRoot.host.language)
-      enabled: !locationRoot.host.detectingLocation
-      bordered: true
-      foreground: locationRoot.host.foreground
-      background: "transparent"
-      fontFamily: locationRoot.host.nameFontFamily
-      fontSize: Style.font.caption
-      onClicked: locationRoot.host.detectLocation()
-    }
-  }
-
   Text {
     textFormat: Text.PlainText
+    id: currentLocation
     width: parent.width
-    text: Model.uiLabel("detectPrivacy", locationRoot.host.language)
-    color: locationRoot.host.faint
+    text: locationRoot.host.displayLocation + "  ·  " + locationRoot.host.timezone
+    color: locationRoot.host.dim
     font.family: locationRoot.host.nameFontFamily
-    font.pixelSize: Style.font.caption
-    wrapMode: Text.WordWrap
+    font.pixelSize: Style.font.bodySmall
+    elide: Text.ElideRight
   }
 
   Item {
@@ -231,7 +193,11 @@ Column {
           anchors.rightMargin: Style.space(8)
           anchors.top: parent.top
           anchors.topMargin: Style.space(4)
-          text: choiceRow.modelData.name
+          // On a postal query the reply names the city, so the code that
+          // actually matched is shown beside it: that is what was typed.
+          text: choiceRow.modelData.postcode !== ""
+            ? choiceRow.modelData.name + "  ·  " + choiceRow.modelData.postcode
+            : choiceRow.modelData.name
           color: locationRoot.host.foreground
           font.family: locationRoot.host.nameFontFamily
           font.pixelSize: Style.font.bodySmall

@@ -38,7 +38,6 @@ Panel {
   property string locationStatus: ""
   property string geocodePendingQuery: ""
   property string geocodeActiveQuery: ""
-  property bool detectingLocation: false
   readonly property bool searchingLocation: geocodeProcess.running
 
   readonly property string zoneScript: Model.filePath(Qt.resolvedUrl("prayer-zone.sh"))
@@ -215,37 +214,12 @@ Panel {
   }
 
   function applyLocationResults(raw) {
-    var choices = Model.parseLocationResults(raw)
+    var choices = Model.parseLocationResults(raw, root.geocodeActiveQuery)
     root.locationChoices = choices
     root.locationStatus = choices.length === 0
       ? Model.uiLabel("noMatches", root.language)
       : ""
   }
-
-  // The detected place only seeds the search box. It is never committed on its
-  // own: the address derived from a connection can be a long way from where the
-  // user is, and a wrong location here means wrong prayer times.
-  function detectLocation() {
-    if (detectProcess.running) return
-    root.detectingLocation = true
-    root.locationStatus = ""
-    detectProcess.running = true
-  }
-
-  function applyDetectedLocation(raw) {
-    var query = Model.detectedLocationQuery(raw)
-    root.detectingLocation = false
-    if (query === "") {
-      root.locationStatus = Model.uiLabel("detectFailed", root.language)
-      return
-    }
-    root.locationStatus = Model.uiLabel("detectHint", root.language)
-    root.locationDetected(query)
-  }
-
-  // Emitted so the picker can put the detected term in its field and run the
-  // search; the panel does not own the text input.
-  signal locationDetected(string query)
 
   // The key catcher owns Tab for switching panels, so the search field would
   // otherwise be mouse-only.
@@ -523,21 +497,6 @@ Panel {
       // The query moved on while this request was in flight.
       if (root.geocodePendingQuery !== root.geocodeActiveQuery)
         Qt.callLater(root.startGeocode)
-    }
-  }
-
-  Process {
-    id: detectProcess
-    command: ["curl", "-fsS", "--max-time", "5", "https://wttr.in/?format=%l"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.applyDetectedLocation(text)
-    }
-    onExited: function(exitCode) {
-      if (exitCode !== 0 && root.detectingLocation) {
-        root.detectingLocation = false
-        root.locationStatus = Model.uiLabel("detectFailed", root.language)
-      }
     }
   }
 

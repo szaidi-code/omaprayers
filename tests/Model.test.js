@@ -507,7 +507,8 @@ test("geocoding results keep the timezone and country code that belong to each r
     countryCode: "US",
     latitude: 37.21,
     longitude: -93.29,
-    timezone: "America/Chicago"
+    timezone: "America/Chicago",
+    postcode: ""
   })
   assert.equal(results[1].timezone, "America/New_York")
   assert.equal(results[1].countryCode, "US")
@@ -542,12 +543,70 @@ test("a region omits missing parts rather than leaving stray separators", () => 
   assert.equal(Model.parseLocationResults(only)[0].region, "Iceland")
 })
 
-test("a detected location is reduced to a search term", () => {
-  assert.equal(Model.detectedLocationQuery("Abū Kabīr, Sharqia, EG"), "Abū Kabīr")
-  assert.equal(Model.detectedLocationQuery("6th+of+October+City, Giza, EG"), "6th of October City")
-  assert.equal(Model.detectedLocationQuery("  Cairo  \n"), "Cairo")
-  assert.equal(Model.detectedLocationQuery(""), "")
-  assert.equal(Model.detectedLocationQuery(undefined), "")
+test("a postal code is told apart from a city name", () => {
+  assert.equal(Model.looksLikePostcode("10001"), true)
+  assert.equal(Model.looksLikePostcode("SW1A 1AA"), true)
+  assert.equal(Model.looksLikePostcode("K1A-0B1"), true)
+  assert.equal(Model.looksLikePostcode("1000"), true)
+  assert.equal(Model.looksLikePostcode("Cairo"), false)
+  // Contains a digit, but it names a place rather than a code.
+  assert.equal(Model.looksLikePostcode("6th of October City"), false)
+  assert.equal(Model.looksLikePostcode("6th of October"), false)
+  assert.equal(Model.looksLikePostcode("New York 10001"), false)
+  assert.equal(Model.looksLikePostcode("A1"), false)
+  assert.equal(Model.looksLikePostcode("123456789012"), false)
+  assert.equal(Model.looksLikePostcode(""), false)
+  assert.equal(Model.looksLikePostcode(undefined), false)
+})
+
+test("a postal query names the code that matched and leads with it", () => {
+  const raw = JSON.stringify({
+    results: [
+      {
+        name: "Newington", country: "United States", admin1: "Connecticut",
+        country_code: "US", latitude: 41.7, longitude: -72.72,
+        timezone: "America/New_York", postcodes: ["06111"]
+      },
+      {
+        name: "New York", country: "United States", admin1: "New York",
+        country_code: "US", latitude: 40.71427, longitude: -74.00597,
+        timezone: "America/New_York", postcodes: ["10000", "10001", "10002"]
+      }
+    ]
+  })
+  const choices = Model.parseLocationResults(raw, "10001")
+  // The exact holder of 10001 leads even though the server returned it second.
+  assert.equal(choices[0].name, "New York")
+  assert.equal(choices[0].postcode, "10001")
+  assert.equal(choices[0].timezone, "America/New_York")
+  assert.equal(choices[1].name, "Newington")
+  assert.equal(choices[1].postcode, "")
+})
+
+test("separators and case do not change which postal code matched", () => {
+  const raw = JSON.stringify({
+    results: [{
+      name: "London", country: "United Kingdom", country_code: "GB",
+      latitude: 51.5, longitude: -0.12, timezone: "Europe/London",
+      postcodes: ["SW1A 1AA"]
+    }]
+  })
+  assert.equal(Model.parseLocationResults(raw, "sw1a1aa")[0].postcode, "SW1A 1AA")
+})
+
+test("a city query annotates no postal code and keeps the server order", () => {
+  const raw = JSON.stringify({
+    results: [
+      { name: "Cairo", country: "Egypt", latitude: 30.06, longitude: 31.25,
+        timezone: "Africa/Cairo", postcodes: ["11511"] },
+      { name: "Cairo", country: "United States", admin1: "Illinois",
+        latitude: 37.0, longitude: -89.18, timezone: "America/Chicago" }
+    ]
+  })
+  const choices = Model.parseLocationResults(raw, "Cairo")
+  assert.equal(choices[0].region, "Egypt")
+  assert.equal(choices[0].postcode, "")
+  assert.equal(choices[1].region, "Illinois, United States")
 })
 
 test("committing a location writes all four keys and clears the Arabic label", () => {

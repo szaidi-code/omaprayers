@@ -20,13 +20,28 @@ test("IPC registration waits for a relocated bar slot to retire", () => {
   assert.match(source, /IpcHandler \{\s+enabled: root\.ipcRegistrationReady\s+target: root\.moduleName/)
 })
 
-test("location requests disclose their external recipients before use", () => {
-  assert.match(modelSource, /detectPrivacy: \["Detect asks wttr\.in for an approximate city using your IP\./)
-  assert.match(modelSource, /citySearchPrivacy: \["City search sends your text to Open-Meteo\./)
-  assert.match(locationSource, /Model\.uiLabel\("detectPrivacy", locationRoot\.host\.language\)/)
+test("location requests disclose their external recipient before use", () => {
+  assert.match(modelSource, /citySearchPrivacy: \["Only what you type is sent, to Open-Meteo\./)
   assert.match(locationSource, /Model\.uiLabel\("citySearchPrivacy", locationRoot\.host\.language\)/)
   assert.match(panelSource, /https:\/\/geocoding-api\.open-meteo\.com\/v1\/search/)
-  assert.match(panelSource, /https:\/\/wttr\.in\/\?format=%l/)
+})
+
+// The IP-address lookup was the only call that sent anything derived from the
+// user rather than typed by them. Geocoding a place the user named is the one
+// remaining recipient, and this pins that down so a future edit cannot quietly
+// reintroduce a second one.
+test("no location is inferred from the connection", () => {
+  const shipped = [
+    "BarWidget.qml", "Panel.qml", "PanelCompact.qml", "PanelDisplay.qml",
+    "PanelHorizon.qml", "PanelLocation.qml", "Engine.js", "Model.js"
+  ].map(name => readFileSync(path.join(__dirname, "..", name), "utf8")).join("\n")
+  assert.doesNotMatch(shipped, /wttr\.in/)
+  assert.doesNotMatch(shipped, /ipinfo|ip-api|ipapi|geoip|myip/i)
+  const urls = shipped.match(/https?:\/\/[^"'\s]+/g) || []
+  assert.deepEqual(
+    [...new Set(urls.map(url => new URL(url).host))],
+    ["geocoding-api.open-meteo.com"]
+  )
 })
 
 test("every text surface renders network-derived values as literal plain text", () => {
@@ -38,7 +53,7 @@ test("every text surface renders network-derived values as literal plain text", 
   const plainSectionHeaders = presentationSource.match(
     /\bPanelSectionHeader\s*\{\s*textFormat:\s*Text\.PlainText\b/g
   ) || []
-  assert.equal(textItems.length, 46)
+  assert.equal(textItems.length, 45)
   assert.equal(plainTextItems.length, textItems.length)
   assert.equal(sectionHeaders.length, 3)
   assert.equal(plainSectionHeaders.length, sectionHeaders.length)
