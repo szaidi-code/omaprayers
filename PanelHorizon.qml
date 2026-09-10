@@ -170,9 +170,14 @@ Column {
           || modelData.name === "Isha"
         readonly property bool isCurrent: horizonRoot.containsNow(modelData)
 
-        x: horizonRoot.place(
-          (modelData.start - horizonRoot.firstSegment.start) / 1440, width
-        )
+        // A refresh empties daySegments while these delegates still exist, and
+        // the binding re-evaluates before they are destroyed. Every sibling
+        // expression already guards firstSegment; this one did not.
+        x: horizonRoot.firstSegment
+          ? horizonRoot.place(
+            (modelData.start - horizonRoot.firstSegment.start) / 1440, width
+          )
+          : 0
         width: dayStrip.width * modelData.length / 1440
         height: dayStrip.height
         color: isCurrent

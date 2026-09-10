@@ -375,8 +375,15 @@ Panel {
     return false
   }
 
+  // Omarchy 4 hands plugins the bar through PluginBarApi, where this property
+  // is a readonly mirror and the setter is the supported entry point. Assigning
+  // to the property throws there, and the throw aborted close() before it
+  // reached controller.hide(), so the panel opened and never closed again. The
+  // bundled clock and weather panels probe in this same order.
   function setCenterHoverRevealSuppressed(value) {
-    if (root.bar && "centerHoverRevealSuppressed" in root.bar)
+    if (root.bar && typeof root.bar.setCenterHoverRevealSuppressed === "function")
+      root.bar.setCenterHoverRevealSuppressed(value)
+    else if (root.bar && "centerHoverRevealSuppressed" in root.bar)
       root.bar.centerHoverRevealSuppressed = value
   }
 
