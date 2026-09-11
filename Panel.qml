@@ -48,11 +48,11 @@ Panel {
   readonly property string latitude: String(setting("latitude", "30.0444"))
   readonly property string longitude: String(setting("longitude", "31.2357"))
   readonly property string timezone: String(setting("timezone", "Africa/Cairo"))
-  readonly property int calculationMethod: Math.round(Model.number(setting("calculationMethod", 5), 5))
+  readonly property int calculationMethod: Math.round(Model.number(setting("calculationMethod", 24), 24))
   readonly property bool hanafi: Model.bool(setting("hanafi", false))
   readonly property int school: hanafi ? 1 : 0
   readonly property int latitudeAdjustmentMethod: latitudeRule(String(setting("highLatitudeRule", "Angle based")))
-  readonly property int midnightMode: String(setting("midnightMode", "Standard")) === "Jafari" ? 1 : 0
+  readonly property int midnightMode: String(setting("midnightMode", "Jafari")) === "Jafari" ? 1 : 0
   readonly property string shafaq: shafaqValue(String(setting("shafaq", "General")))
   readonly property int hijriAdjustment: Math.round(Model.number(setting("hijriAdjustment", 0), 0))
   readonly property string tune: String(setting("tune", "0,0,0,0,0,0,0,0,0"))

@@ -210,6 +210,11 @@ function methodDescription(method, language, methodSettings) {
     ? EngineRef.methodParameters({ method: 99, methodSettings: methodSettings })
     : method
   var parts = [methodValueText("Fajr", params.fajr, 0, language)]
+  if (method.id === 24) {
+    parts.push(label("Maghrib", language) + " 3.75° / 4.5° Iran")
+    parts.push(methodValueText("Isha", params.isha, params.ishaMinutes, language))
+    return parts.join(" · ")
+  }
   if (method.id === 99) {
     if (params.maghrib > 0)
       parts.push(methodValueText("Maghrib", params.maghrib, 0, language))

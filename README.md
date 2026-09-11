@@ -36,7 +36,8 @@ single glyph:
   Vertical bars use a rotated text label.
 - English and Arabic names, dates and countdowns; Arabic uses a configurable
   Noto Naskh Arabic face.
-- Prayer times are calculated offline for 24 methods. Choose the method and
+- Prayer times are calculated offline for 25 methods. Nojumi is the default;
+  choose another method and
   Shafi or Hanafi Asr from the panel, then tune individual times if needed.
 - Optional prayer-time and advance notifications, deduplicated across
   monitors and shell reloads.
@@ -68,7 +69,7 @@ single glyph:
 
 - Omarchy 4 (Quattro)
 - Bash, GNU coreutils, `jq` and installed `tzdata`
-- `curl` for city search and the optional Detect button
+- `curl` for city search
 - `noto-fonts` for Arabic mode
 
 Prayer-time calculation does not require network access.
@@ -98,7 +99,7 @@ omarchy bar set io.github.salemsayed.omaprayers barDisplay "Icon only"
 omarchy bar set io.github.salemsayed.omaprayers panelStyle "Compact"
 omarchy bar set io.github.salemsayed.omaprayers timeFormat "12-hour"
 omarchy bar set io.github.salemsayed.omaprayers notifications true --json
-omarchy bar set io.github.salemsayed.omaprayers calculationMethod 5 --json
+omarchy bar set io.github.salemsayed.omaprayers calculationMethod 24 --json
 omarchy bar set io.github.salemsayed.omaprayers hanafi true --json
 omarchy bar set io.github.salemsayed.omaprayers highLatitudeRule "Angle based"
 ```
@@ -135,17 +136,16 @@ published timetables, adhan-js and recorded
 [AlAdhan](https://aladhan.com/prayer-times-api) output; see
 [Validation](docs/VALIDATION.md). AlAdhan is not used at runtime.
 
-The city search uses [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api);
-the optional *Detect* button reads the connection's apparent city from
-[wttr.in](https://wttr.in) and only fills the search box. Nothing is applied
-until you pick a result.
+The city search uses [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api).
+Only the selected city's coordinates and timezone are used; prayer times are
+still calculated locally.
 
 ## Accuracy
 
 Prayer times are calculated offline from explicit latitude, longitude and an
 IANA timezone; the computer's timezone is not assumed. The astronomy
-algorithm is ported from adhan-js. The engine includes 24 methods, including
-Custom, with the built-in minute adjustments and fixed intervals listed in
+algorithm is ported from adhan-js. The engine includes 25 methods, including
+Nojumi and Custom, with the built-in minute adjustments and fixed intervals listed in
 [Validation](docs/VALIDATION.md).
 
 Validation covers eight official timetable fixtures (462 rows, all within
@@ -160,9 +160,11 @@ Calculated times are not mosque iqama schedules. Choose the method used by
 the nearest authority, select the local Asr school, compare with a trusted
 local calendar, then adjust Fajr, Sunrise, Dhuhr, Asr, Maghrib or Isha in the
 panel. Imsak, Sunset and Midnight tuning and the high-latitude, midnight,
-Shafaq, Hijri and Custom options remain available through configuration.
-Defaults: Cairo, method 5 (Egyptian General Authority of Survey), Shafi Asr,
-24-hour, English, Horizon, notifications off.
+Shafaq, Hijri and Custom options remain available through configuration. The
+Nojumi profile uses Fajr at 18°, Maghrib at 3.75° outside Iran and 4.5° in
+Iran, Isha at 15° where the source site does not expose an Isha parameter,
+and sunset-to-Fajr legal midnight. Defaults: Cairo, method 24 (Nojumi),
+Jafari midnight, Shafi Asr, 24-hour, English, Horizon, notifications off.
 
 ## License
 

@@ -345,6 +345,21 @@ var METHODS = [
     regions: ["JO"]
   },
   {
+    id: 24,
+    code: "NOJUMI",
+    name: ["Nojumi Astronomical Research Center", "مرکز تحقیقات نجوم نوژومی"],
+    short: ["Nojumi", "نوژومی"],
+    fajr: 18,
+    isha: 15,
+    ishaMinutes: 0,
+    maghrib: 3.75,
+    maghribMinutes: 0,
+    adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
+    rounding: "nearest",
+    midnight: "Jafari",
+    regions: []
+  },
+  {
     id: 99,
     code: "CUSTOM",
     name: ["Custom", "مخصص"],
@@ -577,6 +592,7 @@ function methodParameters(config) {
   var fajr = method.fajr
   var maghrib = method.maghrib
   var isha = method.isha
+  if (method.id === 24 && String(source.timezone || "") === "Asia/Tehran") maghrib = 4.5
   if (method.id === 99) {
     var values = source.methodSettings instanceof Array
       ? source.methodSettings

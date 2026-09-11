@@ -12,10 +12,10 @@ panel, the Omarchy settings UI, or `omarchy bar set`.
 | `latitude` | `30.0444` | City picker | Prayer-location latitude |
 | `longitude` | `31.2357` | City picker | Prayer-location longitude |
 | `timezone` | `Africa/Cairo` | City picker | IANA timezone of that location |
-| `calculationMethod` | `5` | Yes | Local calculation method; IDs are listed below |
+| `calculationMethod` | `24` | Yes | Local calculation method; IDs are listed below |
 | `hanafi` | `false` | Yes | `false` for Shafi Asr; `true` for Hanafi Asr |
 | `highLatitudeRule` | `Angle based` | No | `Middle of the night`, `One seventh`, `Angle based` |
-| `midnightMode` | `Standard` | No | `Standard` or `Jafari` |
+| `midnightMode` | `Jafari` | No | `Standard` or `Jafari` |
 | `shafaq` | `General` | No | `General`, `Red`, `White` for method 15 |
 | `hijriAdjustment` | `0` | No | Hijri date offset, -2 to +2 days |
 | `tune` | nine zeroes | Six values | Minute offsets: Imsak,Fajr,Sunrise,Dhuhr,Asr,Maghrib,Sunset,Isha,Midnight |
@@ -23,7 +23,7 @@ panel, the Omarchy settings UI, or `omarchy bar set`.
 
 The panel's city search (`C` or `/`, or the gear) writes `locationLabel`,
 `latitude`, `longitude` and `timezone` together, so the zone always matches
-the place. *Detect* only fills the search box. Changing a location rebuilds
+the place. Changing a location rebuilds
 the schedule locally and resets `locationLabelAr`. A mapped country may show
 a method suggestion; it is never applied automatically.
 
@@ -38,8 +38,8 @@ respectively. Other methods ignore this setting.
 
 ### Calculation methods
 
-The IDs are unchanged from earlier releases and remain compatible with the
-AlAdhan method IDs. Calculation is local.
+The existing IDs remain compatible with the AlAdhan method IDs; Nojumi is the
+additional local profile at ID 24. Calculation is local.
 
 | ID | Method |
 |---:|---|
@@ -66,7 +66,11 @@ AlAdhan method IDs. Calculation is local.
 | `21` | Morocco |
 | `22` | Comunidade Islâmica de Lisboa |
 | `23` | Ministry of Awqaf, Jordan |
+| `24` | Nojumi Astronomical Research Center |
 | `99` | Custom |
+
+Nojumi uses an 18° Fajr angle, 3.75° Maghrib outside Iran and 4.5° in Iran,
+the plugin's documented 15° Isha fallback, and Jafari midnight.
 
 ## Presentation
 

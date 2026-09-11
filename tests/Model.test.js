@@ -363,13 +363,15 @@ test("method options follow catalog order and keep string values", () => {
   const options = Model.methodOptions("English")
   assert.deepEqual(options.map(option => option.value), [
     "3", "2", "5", "4", "1", "7", "0", "8", "9", "10", "11", "12",
-    "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "99"
+    "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "99"
   ])
   assert.deepEqual(options.map(option => option.value), Model.METHODS.map(method => String(method.id)))
   assert.equal(options.find(option => option.value === "5").label,
     "Egyptian General Authority of Survey")
   assert.equal(options.find(option => option.value === "5").description,
     "Fajr 19.5° · Isha 17.5°")
+  assert.equal(options.find(option => option.value === "24").description,
+    "Fajr 18° · Maghrib 3.75° / 4.5° Iran · Isha 15°")
 })
 
 test("method options localize labels and describe all custom values as angles", () => {

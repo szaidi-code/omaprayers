@@ -230,13 +230,13 @@ test("Engine.js stays within the shared ES5 and QML loading subset", () => {
   for (const pattern of forbidden) assert.equal(pattern.test(source), false, String(pattern))
   const context = { Math, Date, JSON, Number, String, Boolean, isFinite, isNaN, module: { exports: {} } }
   vm.runInNewContext(source, context, { filename: "Engine.js" })
-  assert.equal(context.module.exports.METHODS.length, 24)
+  assert.equal(context.module.exports.METHODS.length, 25)
 })
 
 test("method catalog order, lookup, regions, and custom components follow the contract", () => {
   assert.deepEqual(Engine.METHODS.map(method => method.id),
-    [3, 2, 5, 4, 1, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 99])
-  assert.equal(new Set(Engine.METHODS.map(method => method.id)).size, 24)
+    [3, 2, 5, 4, 1, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 99])
+  assert.equal(new Set(Engine.METHODS.map(method => method.id)).size, 25)
   assert.equal(Engine.methodById("5").code, "EGAS")
   assert.equal(Engine.methodById(6), null)
   assert.deepEqual(Engine.methodById(17).regions, ["MY", "BN"])
@@ -246,6 +246,24 @@ test("method catalog order, lookup, regions, and custom components follow the co
   assert.equal(custom.maghribAngle, 0)
   assert.equal(custom.ishaAngle, 15)
   assert.deepEqual(custom.adjustments, { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 })
+})
+
+test("Nojumi uses its published location-aware parameters", () => {
+  const base = {
+    latitude: 38.42207,
+    longitude: -77.40832,
+    method: 24,
+    school: 0,
+    latitudeAdjustmentMethod: 3,
+    midnightMode: 1,
+    shafaq: "general",
+    tune: "0,0,0,0,0,0,0,0,0"
+  }
+  const day = Engine.dayTimes({ ...base, timezone: "America/New_York" }, 2026, 9, 11, null)
+  assert.equal(Engine.clock(day.Fajr, -14400), "05:17")
+  assert.equal(Engine.clock(day.Maghrib, -14400), "19:39")
+  assert.equal(Engine.clock(day.Midnight, -14400), "00:21")
+  assert.equal(Engine.methodParameters({ method: 24, timezone: "Asia/Tehran" }).maghribAngle, 4.5)
 })
 
 test("official Batoul Apps timetable rows stay inside their published variance", () => {
