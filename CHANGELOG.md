@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.3 - 2026-09-12
+
+- Fix the panel refusing to close on Omarchy 4, where the bar's PluginBarApi
+  exposes `centerHoverRevealSuppressed` as a readonly mirror instead of a
+  writable property.
+- Fix a TypeError on every refresh from an unguarded day-strip binding.
+- Take the location from a searched city or postal code instead of an
+  IP-derived guess.
+- Add Nojumi as a selectable calculation method, and disable the Hanafi Asr
+  choice while it's selected since Nojumi has no Hanafi convention of its own.
+
 ## 2.3.2 - 2026-08-31
 
 - Render location, Hijri, status, and prayer labels as literal plain text so

@@ -275,7 +275,7 @@ Column {
         )
         value: String(displayRoot.host.calculationMethod)
         onChanged: function(next) {
-          displayRoot.host.setSetting("calculationMethod", parseInt(next, 10))
+          displayRoot.host.setCalculationMethod(parseInt(next, 10))
         }
         onPopupOpenChanged: displayRoot.syncCalculationFocus()
       }
@@ -297,6 +297,7 @@ Column {
         id: schoolChoice
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
+        enabled: displayRoot.host.hanafiSupported
         options: Model.optionModel(Model.SCHOOLS, displayRoot.host.language)
         value: displayRoot.host.school === 1 ? "Hanafi" : "Shafi"
         onChanged: function(next) {
