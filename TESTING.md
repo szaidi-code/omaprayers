@@ -14,7 +14,7 @@ shellcheck prayer-zone.sh prayer-notify.sh tests/*.sh tests/run
 
 `tests/run` covers:
 
-- the ES5/QML-compatible engine, all 24 method IDs, official timetable
+- the ES5/QML-compatible engine, all 25 method IDs, official timetable
   fixtures, seeded adhan-js regular and polar fuzz, an independent solar
   check, calculation properties, tuning, Umm al-Qura Hijri and schedules;
 - all 60 recorded AlAdhan calendar snapshots plus 36 UAQ Hijri rows;

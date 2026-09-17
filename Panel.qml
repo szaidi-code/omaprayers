@@ -50,7 +50,10 @@ Panel {
   readonly property string longitude: String(setting("longitude", "31.2357"))
   readonly property string timezone: String(setting("timezone", "Africa/Cairo"))
   readonly property int calculationMethod: Math.round(Model.number(setting("calculationMethod", 5), 5))
-  readonly property bool hanafi: Model.bool(setting("hanafi", false))
+  // Shia methods (Qum, Tehran, Nojumi) fix Asr at the standard shadow length,
+  // so the Shafi/Hanafi choice does not apply while one of them is selected.
+  readonly property bool hanafiSupported: Model.hanafiSupported(calculationMethod)
+  readonly property bool hanafi: hanafiSupported && Model.bool(setting("hanafi", false))
   readonly property int school: hanafi ? 1 : 0
   readonly property int latitudeAdjustmentMethod: latitudeRule(String(setting("highLatitudeRule", "Angle based")))
   readonly property int midnightMode: String(setting("midnightMode", "Standard")) === "Jafari" ? 1 : 0
@@ -173,6 +176,14 @@ Panel {
     persistSettings(values)
   }
 
+  // Switching to a method without a Hanafi convention clears any stored
+  // Hanafi choice in the same write rather than leaving it stale.
+  function setCalculationMethod(method) {
+    var values = { calculationMethod: method }
+    if (!Model.hanafiSupported(method)) values.hanafi = false
+    persistSettings(values)
+  }
+
   function cycleSetting(key, ring) {
     var next = Model.nextInRing(ring, root.setting(key, ring[0]))
     if (next !== "") setSetting(key, next)
@@ -283,7 +294,7 @@ Panel {
     if (!root.pendingMethodSuggestion) return
     var method = root.pendingMethodSuggestion.id
     root.pendingMethodSuggestion = null
-    root.setSetting("calculationMethod", method)
+    root.setCalculationMethod(method)
   }
 
   function dismissMethodSuggestion() {

@@ -36,8 +36,9 @@ single glyph:
   Vertical bars use a rotated text label.
 - English and Arabic names, dates and countdowns; Arabic uses a configurable
   Noto Naskh Arabic face.
-- Prayer times are calculated offline for 24 methods. Choose the method and
-  Shafi or Hanafi Asr from the panel, then tune individual times if needed.
+- Prayer times are calculated offline for 25 methods. Choose the method and,
+  for Sunni methods, Shafi or Hanafi Asr from the panel, then tune individual
+  times if needed.
 - Optional prayer-time and advance notifications, deduplicated across
   monitors and shell reloads.
 - Location and presentation are set from the panel. The city search lists
@@ -144,8 +145,8 @@ until you pick a result.
 
 Prayer times are calculated offline from explicit latitude, longitude and an
 IANA timezone; the computer's timezone is not assumed. The astronomy
-algorithm is ported from adhan-js. The engine includes 24 methods, including
-Custom, with the built-in minute adjustments and fixed intervals listed in
+algorithm is ported from adhan-js. The engine includes 25 methods, including
+Nojumi and Custom, with the built-in minute adjustments and fixed intervals listed in
 [Validation](docs/VALIDATION.md).
 
 Validation covers eight official timetable fixtures (462 rows, all within
@@ -163,6 +164,13 @@ panel. Imsak, Sunset and Midnight tuning and the high-latitude, midnight,
 Shafaq, Hijri and Custom options remain available through configuration.
 Defaults: Cairo, method 5 (Egyptian General Authority of Survey), Shafi Asr,
 24-hour, English, Horizon, notifications off.
+
+The Nojumi profile is published by the Astronomical Research Center in Qom
+([nojumi.org](https://english.nojumi.org/prayertimes)): Fajr at 18°, Maghrib
+at 3.75° outside Iran and 4.5° in Iran, Isha at 15° because the source
+publishes no Isha parameter, and sunset-to-Fajr legal midnight. The Shia
+methods (Qum, Tehran, Nojumi) fix Asr at the standard shadow length, so the
+Shafi/Hanafi choice is disabled while one of them is selected.
 
 ## License
 

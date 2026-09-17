@@ -202,6 +202,10 @@ function methodLabel(id, language) {
   return text(language) === "Arabic" ? method.name[1] : method.name[0]
 }
 
+function hanafiSupported(id) {
+  return EngineRef.hanafiSupported(id)
+}
+
 function decimalText(value) {
   var numberValue = Number(value)
   if (!isFinite(numberValue)) return "0"
@@ -220,6 +224,11 @@ function methodDescription(method, language, methodSettings) {
     ? EngineRef.methodParameters({ method: 99, methodSettings: methodSettings })
     : method
   var parts = [methodValueText("Fajr", params.fajr, 0, language)]
+  if (method.code === "NOJUMI") {
+    parts.push(label("Maghrib", language) + " 3.75° / 4.5° Iran")
+    parts.push(methodValueText("Isha", params.isha, params.ishaMinutes, language))
+    return parts.join(" · ")
+  }
   if (method.id === 99) {
     if (params.maghrib > 0)
       parts.push(methodValueText("Maghrib", params.maghrib, 0, language))
@@ -768,6 +777,7 @@ if (typeof module !== "undefined") {
     optionLabel: optionLabel,
     optionModel: optionModel,
     methodOptions: methodOptions,
+    hanafiSupported: hanafiSupported,
     methodLabel: methodLabel,
     suggestedMethod: suggestedMethod,
     tuneValues: tuneValues,

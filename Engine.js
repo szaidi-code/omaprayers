@@ -87,6 +87,7 @@ var METHODS = [
     adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
     rounding: "nearest",
     midnight: "Jafari",
+    hanafiSupported: false,
     regions: ["IR"]
   },
   {
@@ -102,6 +103,7 @@ var METHODS = [
     adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
     rounding: "nearest",
     midnight: "Jafari",
+    hanafiSupported: false,
     regions: []
   },
   {
@@ -345,6 +347,22 @@ var METHODS = [
     regions: ["JO"]
   },
   {
+    id: 24,
+    code: "NOJUMI",
+    name: ["Astronomical Research Center (A.R.C.), Qom", "مركز البحوث والدراسات الفلكية"],
+    short: ["Nojumi", "نجومي"],
+    fajr: 18,
+    isha: 15,
+    ishaMinutes: 0,
+    maghrib: 3.75,
+    maghribMinutes: 0,
+    adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
+    rounding: "nearest",
+    midnight: "Jafari",
+    hanafiSupported: false,
+    regions: []
+  },
+  {
     id: 99,
     code: "CUSTOM",
     name: ["Custom", "مخصص"],
@@ -547,6 +565,14 @@ function methodById(id) {
   return null
 }
 
+// Shia methods fix Asr at the standard shadow length, so they carry
+// hanafiSupported: false and the Shafi/Hanafi choice does not apply to them.
+function hanafiSupported(id) {
+  var method = methodById(id)
+  if (!method) return true
+  return method.hanafiSupported !== false
+}
+
 function copyAdjustments(source) {
   return {
     fajr: Number(source.fajr) || 0,
@@ -577,6 +603,8 @@ function methodParameters(config) {
   var fajr = method.fajr
   var maghrib = method.maghrib
   var isha = method.isha
+  // Nojumi publishes a steeper Maghrib angle for Iran than for elsewhere.
+  if (method.code === "NOJUMI" && String(source.timezone || "") === "Asia/Tehran") maghrib = 4.5
   if (method.id === 99) {
     var values = source.methodSettings instanceof Array
       ? source.methodSettings
@@ -1453,6 +1481,7 @@ if (typeof module !== "undefined") {
   module.exports = {
     METHODS: METHODS,
     methodById: methodById,
+    hanafiSupported: hanafiSupported,
     methodParameters: methodParameters,
     prayerTimes: prayerTimes,
     dayTimes: dayTimes,
