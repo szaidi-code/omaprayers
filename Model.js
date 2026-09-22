@@ -81,6 +81,7 @@ var UI_LABELS = {
   apply: ["Apply", "تطبيق"],
   dismiss: ["Dismiss", "تجاهل"],
   approximate: ["High-latitude approximation: nearest valid latitude used", "تقريب للمناطق القطبية: استُخدم أقرب خط عرض صالح"],
+  nojumiNote: ["Standard Asr; sunset-to-Fajr midnight. Isha 15° is an estimate, not published by Nojumi. Saved school and midnight preferences are preserved.", "العصر بالظل المعتاد؛ منتصف الليل بين الغروب والفجر. العشاء بزاوية 15° تقديري ولا ينشره نجومي. تبقى تفضيلات العصر ومنتصف الليل محفوظة."],
   searchMethod: ["Search methods", "ابحث عن طريقة"],
   noMethod: ["No matching method", "لا توجد طريقة مطابقة"],
   display: ["Display", "العرض"],
@@ -225,8 +226,10 @@ function methodDescription(method, language, methodSettings) {
     : method
   var parts = [methodValueText("Fajr", params.fajr, 0, language)]
   if (method.code === "NOJUMI") {
-    parts.push(label("Maghrib", language) + " 3.75° / 4.5° Iran")
-    parts.push(methodValueText("Isha", params.isha, params.ishaMinutes, language))
+    parts.push(label("Maghrib", language) + (text(language) === "Arabic"
+      ? " 3.75° / 4.5° إيران" : " 3.75° / 4.5° Iran"))
+    parts.push(methodValueText("Isha", params.isha, params.ishaMinutes, language)
+      + (text(language) === "Arabic" ? " (تقديري)" : " (estimated)"))
     return parts.join(" · ")
   }
   if (method.id === 99) {

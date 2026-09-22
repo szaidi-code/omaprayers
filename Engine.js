@@ -87,7 +87,6 @@ var METHODS = [
     adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
     rounding: "nearest",
     midnight: "Jafari",
-    hanafiSupported: false,
     regions: ["IR"]
   },
   {
@@ -103,7 +102,6 @@ var METHODS = [
     adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
     rounding: "nearest",
     midnight: "Jafari",
-    hanafiSupported: false,
     regions: []
   },
   {
@@ -347,9 +345,11 @@ var METHODS = [
     regions: ["JO"]
   },
   {
-    id: 24,
+    id: 1000,
     code: "NOJUMI",
-    name: ["Astronomical Research Center (A.R.C.), Qom", "مركز البحوث والدراسات الفلكية"],
+    hanafiSupported: false,
+    fixedMidnightMode: 1,
+    name: ["Nojumi - Astronomical Research Center (A.R.C.), Qom", "نجومي - مركز البحوث والدراسات الفلكية"],
     short: ["Nojumi", "نجومي"],
     fajr: 18,
     isha: 15,
@@ -359,7 +359,6 @@ var METHODS = [
     adjustments: { fajr: 0, sunrise: 0, dhuhr: 0, asr: 0, maghrib: 0, isha: 0 },
     rounding: "nearest",
     midnight: "Jafari",
-    hanafiSupported: false,
     regions: []
   },
   {
@@ -565,12 +564,21 @@ function methodById(id) {
   return null
 }
 
-// Shia methods fix Asr at the standard shadow length, so they carry
-// hanafiSupported: false and the Shafi/Hanafi choice does not apply to them.
+// Only opt-in profiles restrict Asr; existing method behavior stays unchanged.
 function hanafiSupported(id) {
   var method = methodById(id)
   if (!method) return true
   return method.hanafiSupported !== false
+}
+
+function effectiveSchool(id, school) {
+  return hanafiSupported(id) && Number(school) === 1 ? 1 : 0
+}
+
+function effectiveMidnightMode(id, mode) {
+  var method = methodById(id)
+  return method && method.fixedMidnightMode !== undefined
+    ? method.fixedMidnightMode : (Number(mode) === 1 ? 1 : 0)
 }
 
 function copyAdjustments(source) {
@@ -630,7 +638,8 @@ function methodParameters(config) {
     maghribInterval: method.id === 99 ? 0 : method.maghribMinutes,
     adjustments: copyAdjustments(method.adjustments),
     rounding: method.rounding,
-    midnight: method.midnight
+    midnight: method.midnight,
+    hanafiSupported: method.hanafiSupported !== false
   }
 }
 
@@ -1052,7 +1061,7 @@ function prayerTimes(year, month, day, latitude, longitude, params, options) {
   var sunsetTime = epochFromHours(year, month, day, solar.sunset)
   var tomorrowSunrise = epochFromHours(tomorrow.year, tomorrow.month, tomorrow.day, tomorrowSolar.sunrise)
   var dhuhrTime = epochFromHours(year, month, day, solar.transit)
-  var school = options && Number(options.school) === 1 ? 2 : 1
+  var school = params.hanafiSupported !== false && options && Number(options.school) === 1 ? 2 : 1
   var asrTime = epochFromHours(year, month, day, afternoon(solar, school))
   var night = tomorrowSunrise - sunsetTime
   if (!isFinite(night) || night <= 0) return null
@@ -1145,7 +1154,7 @@ function dayTimes(config, year, month, day, hijri) {
   var tune = tuneValues(config.tune)
   var ishaTime = current.isha
   if (params.id === 4 && hijri && Number(hijri.month) === 9) ishaTime += 30 * 60000
-  var nightEnd = Number(config.midnightMode) === 1 ? next.fajr : next.sunrise
+  var nightEnd = effectiveMidnightMode(params.id, config.midnightMode) === 1 ? next.fajr : next.sunrise
   var night = nightEnd - current.sunset
   if (!isFinite(night) || night <= 0) return null
   var firstThird = current.sunset + night / 3
@@ -1307,10 +1316,10 @@ function normalizedConfig(config, zone) {
   method = Math.round(method)
   var school = Number(config.school)
   if (!isFinite(school)) school = config.hanafi ? 1 : 0
-  school = school === 1 ? 1 : 0
+  school = effectiveSchool(method, school)
   var latitudeRule = Number(config.latitudeAdjustmentMethod)
   if (latitudeRule !== 1 && latitudeRule !== 2 && latitudeRule !== 3) latitudeRule = 3
-  var midnightMode = Number(config.midnightMode) === 1 ? 1 : 0
+  var midnightMode = effectiveMidnightMode(method, config.midnightMode)
   var hijriAdjustment = Number(config.hijriAdjustment)
   if (!isFinite(hijriAdjustment)) hijriAdjustment = 0
   hijriAdjustment = Math.round(hijriAdjustment)
@@ -1482,6 +1491,8 @@ if (typeof module !== "undefined") {
     METHODS: METHODS,
     methodById: methodById,
     hanafiSupported: hanafiSupported,
+    effectiveSchool: effectiveSchool,
+    effectiveMidnightMode: effectiveMidnightMode,
     methodParameters: methodParameters,
     prayerTimes: prayerTimes,
     dayTimes: dayTimes,

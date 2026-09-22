@@ -50,13 +50,13 @@ Panel {
   readonly property string longitude: String(setting("longitude", "31.2357"))
   readonly property string timezone: String(setting("timezone", "Africa/Cairo"))
   readonly property int calculationMethod: Math.round(Model.number(setting("calculationMethod", 5), 5))
-  // Shia methods (Qum, Tehran, Nojumi) fix Asr at the standard shadow length,
-  // so the Shafi/Hanafi choice does not apply while one of them is selected.
+  // Nojumi uses standard Asr without changing the saved school preference.
   readonly property bool hanafiSupported: Model.hanafiSupported(calculationMethod)
   readonly property bool hanafi: hanafiSupported && Model.bool(setting("hanafi", false))
   readonly property int school: hanafi ? 1 : 0
   readonly property int latitudeAdjustmentMethod: latitudeRule(String(setting("highLatitudeRule", "Angle based")))
-  readonly property int midnightMode: String(setting("midnightMode", "Standard")) === "Jafari" ? 1 : 0
+  readonly property int midnightMode: Engine.effectiveMidnightMode(calculationMethod,
+    String(setting("midnightMode", "Standard")) === "Jafari" ? 1 : 0)
   readonly property string shafaq: shafaqValue(String(setting("shafaq", "General")))
   readonly property int hijriAdjustment: Math.round(Model.number(setting("hijriAdjustment", 0), 0))
   readonly property string tune: String(setting("tune", "0,0,0,0,0,0,0,0,0"))
@@ -175,12 +175,9 @@ Panel {
     persistSettings(values)
   }
 
-  // Switching to a method without a Hanafi convention clears any stored
-  // Hanafi choice in the same write rather than leaving it stale.
+  // Keep school and midnight preferences intact when switching profiles.
   function setCalculationMethod(method) {
-    var values = { calculationMethod: method }
-    if (!Model.hanafiSupported(method)) values.hanafi = false
-    persistSettings(values)
+    persistSettings({ calculationMethod: method })
   }
 
   function cycleSetting(key, ring) {

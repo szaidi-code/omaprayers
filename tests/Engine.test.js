@@ -235,7 +235,7 @@ test("Engine.js stays within the shared ES5 and QML loading subset", () => {
 
 test("method catalog order, lookup, regions, and custom components follow the contract", () => {
   assert.deepEqual(Engine.METHODS.map(method => method.id),
-    [3, 2, 5, 4, 1, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 99])
+    [3, 2, 5, 4, 1, 7, 0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 1000, 99])
   assert.equal(new Set(Engine.METHODS.map(method => method.id)).size, 25)
   assert.equal(Engine.methodById("5").code, "EGAS")
   assert.equal(Engine.methodById(6), null)
@@ -252,7 +252,7 @@ test("Nojumi uses its published location-aware parameters", () => {
   const base = {
     latitude: 38.42207,
     longitude: -77.40832,
-    method: 24,
+    method: 1000,
     school: 0,
     latitudeAdjustmentMethod: 3,
     midnightMode: 1,
@@ -263,14 +263,14 @@ test("Nojumi uses its published location-aware parameters", () => {
   assert.equal(Engine.clock(day.Fajr, -14400), "05:17")
   assert.equal(Engine.clock(day.Maghrib, -14400), "19:39")
   assert.equal(Engine.clock(day.Midnight, -14400), "00:21")
-  assert.equal(Engine.methodParameters({ method: 24, timezone: "Asia/Tehran" }).maghribAngle, 4.5)
-  assert.equal(Engine.methodById(24).name[0], "Astronomical Research Center (A.R.C.), Qom")
+  assert.equal(Engine.methodParameters({ method: 1000, timezone: "Asia/Tehran" }).maghribAngle, 4.5)
+  assert.equal(Engine.methodById(1000).name[0], "Nojumi - Astronomical Research Center (A.R.C.), Qom")
 })
 
-test("Shia methods have no Hanafi Asr convention; every other method keeps the choice", () => {
-  for (const id of [0, 7, 24]) assert.equal(Engine.hanafiSupported(id), false, String(id))
-  for (const id of [3, 2, 5, 4, 1, 8, 15, 99]) assert.equal(Engine.hanafiSupported(id), true, String(id))
-  assert.equal(Engine.hanafiSupported("7"), false)
+test("Only Nojumi restricts Asr; existing methods keep the choice", () => {
+  for (const id of [1000]) assert.equal(Engine.hanafiSupported(id), false, String(id))
+  for (const id of [0, 7, 3, 2, 5, 4, 1, 8, 15, 99]) assert.equal(Engine.hanafiSupported(id), true, String(id))
+  assert.equal(Engine.hanafiSupported("7"), true)
   assert.equal(Engine.hanafiSupported(6), true)
 })
 
@@ -472,7 +472,8 @@ test("prayer-time properties hold across cities, methods, schools, rules, and da
             assert.ok(times.Sunset <= times.Maghrib)
             assert.ok(times.Firstthird < times.Midnight && times.Midnight < times.Lastthird)
           }
-          if (shafi.resolution === "none" && hanafi.resolution === "none") assert.ok(hanafi.Asr > shafi.Asr)
+          if (method.id === 1000) assert.equal(hanafi.Asr, shafi.Asr)
+          else if (shafi.resolution === "none" && hanafi.resolution === "none") assert.ok(hanafi.Asr > shafi.Asr)
           assert.ok(jafariNight.Midnight <= shafi.Midnight)
           if (method.id === 22) assert.equal(shafi.Isha, shafi.Maghrib + 77 * 60000)
           if (method.id === 23) assert.equal(shafi.Maghrib, shafi.Sunset + 5 * 60000)

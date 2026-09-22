@@ -298,12 +298,25 @@ Column {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         enabled: displayRoot.host.hanafiSupported
+        opacity: enabled ? 1 : 0.45
         options: Model.optionModel(Model.SCHOOLS, displayRoot.host.language)
         value: displayRoot.host.school === 1 ? "Hanafi" : "Shafi"
         onChanged: function(next) {
           displayRoot.host.setSetting("hanafi", next === "Hanafi")
         }
       }
+    }
+
+    Text {
+      textFormat: Text.PlainText
+      visible: !displayRoot.host.hanafiSupported
+      width: parent.width
+      text: Model.uiLabel("nojumiNote", displayRoot.host.language)
+      wrapMode: Text.WordWrap
+      color: displayRoot.host.foreground
+      opacity: 0.65
+      font.family: displayRoot.host.nameFontFamily
+      font.pixelSize: Style.font.caption
     }
 
     Item {
