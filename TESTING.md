@@ -1,5 +1,8 @@
 # Testing
 
+The [desktop report](docs/DESKTOP-TEST-REPORT.md) records the Accent lead
+notification checks on the current Omarchy 4.0.4 desktop.
+
 The [VM report](docs/VM-TEST-REPORT.md) includes the 2.3.4 response-limit checks
 and 2.3.3 panel dismissal and placement checks on Omarchy 4.0.3, followed by
 earlier validation runs. Use the checks below for the current release.
@@ -117,6 +120,10 @@ labels. Use the live oracle above when an AlAdhan comparison is needed.
   Detect report their network failure without disturbing the schedule.
 - Cairo, London, New York and Lord Howe DST boundaries keep the right wall
   clock and countdown. Kiritimati and Honolulu cross the date line correctly.
+- With notifications enabled, set Accent lead to 20 minutes: the advance
+  reminder fires 20 minutes before prayer, with no extra reminder at 10 minutes.
+  Set it to Off: only the prayer-time notification fires. With notifications
+  disabled, no reminders fire regardless of Accent lead.
 - Suspend across a notification: one delivery inside the grace window, none
   outside it.
 - Two simultaneous widgets do not duplicate a prayer notification. Repeat on

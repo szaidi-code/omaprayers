@@ -89,6 +89,9 @@ if you prefer another spot.
 Location, calculation method, Asr school, six tuning values, layout, panel
 centering, bar label, clock format, language, sunrise and night markers,
 notifications and the accent lead time are on the panel's settings section.
+Accent lead controls both the bar highlight and the advance prayer reminder
+when notifications are enabled. Off disables advance reminders while keeping
+prayer-time notifications.
 Press `M` to open the method picker directly.
 
 Use `omarchy bar set` for the same settings and for advanced calculation

@@ -72,7 +72,6 @@ Panel {
   readonly property bool centerOnBar: Model.bool(setting("centerOnBar", true))
   readonly property int highlightBeforeMinutes: Math.max(0, Math.round(Model.number(setting("highlightBeforeMinutes", 15), 15)))
   readonly property bool notificationsEnabled: Model.bool(setting("notifications", false))
-  readonly property int notifyBeforeMinutes: Math.max(0, Math.round(Model.number(setting("notifyBeforeMinutes", 10), 10)))
   readonly property int notificationGraceMinutes: Math.max(1, Math.round(Model.number(setting("notificationGraceMinutes", 10), 10)))
 
   readonly property var expectedConfig: ({
@@ -453,7 +452,7 @@ Panel {
     if (notificationsEnabled && schedule) {
       queueNotifications(Model.notificationEvents(
         schedule, previousEpoch, currentEpoch,
-        notifyBeforeMinutes, notificationGraceMinutes
+        highlightBeforeMinutes, notificationGraceMinutes
       ))
     }
 

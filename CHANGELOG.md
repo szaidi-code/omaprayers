@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.4.0 - 2026-09-22
+
+- Use Accent lead for both the bar highlight and advance prayer reminders.
+  The default reminder now arrives 15 minutes before prayer.
+- Setting Accent lead to Off disables advance reminders while keeping
+  prayer-time notifications when Notifications is enabled.
+- Remove the separate `notifyBeforeMinutes` setting. Existing saved values
+  are ignored; reminders follow `highlightBeforeMinutes` instead.
+- Add nine regression tests and verify six live notification cases on an
+  Omarchy 4.0.4 desktop, including English and Arabic notification rendering.
+
 ## 2.3.4 - 2026-09-14
 
 - Limit city-search responses to 64 KiB and location-detection responses to
