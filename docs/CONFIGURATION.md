@@ -80,7 +80,7 @@ AlAdhan method IDs. Calculation is local.
 | `showSunrise` | `true` | Show the sunrise row |
 | `showNightMarkers` | `true` | Show Imsak, midnight, first and last third |
 | `centerOnBar` | `true` | Center the panel on the bar; disable to anchor it to the clicked widget |
-| `highlightBeforeMinutes` | `15` | Accent the next prayer this many minutes ahead |
+| `highlightBeforeMinutes` | `15` | Accent the next prayer and, when notifications are enabled, send an advance reminder this many minutes ahead; 0 disables advance reminders |
 
 All of these except `arabicFont` are also on the panel (footer buttons, the
 gear, and the `D`, `S`, `B`, `T`, `A` keys). They repaint without recalculating
@@ -95,11 +95,16 @@ Vertical bars replace the strip chip with a rotated text label.
 | Setting | Default | Meaning |
 |---|---:|---|
 | `notifications` | `false` | Prayer-time notifications |
-| `notifyBeforeMinutes` | `10` | Advance notification; 0 disables it |
 | `notificationGraceMinutes` | `10` | Deliver an event missed during suspend if it is this recent |
 
-The panel edits `notifications`. The advance and grace values are
+The panel edits `notifications` and **Accent lead** (`highlightBeforeMinutes`).
+Accent lead controls both the bar highlight and advance reminder, defaulting
+to 15 minutes. Setting it to Off (0) disables advance reminders; prayer-time
+notifications still fire when notifications are enabled. The grace value is
 configuration-only.
+
+The old `notifyBeforeMinutes` setting is no longer used. Existing saved values
+can be removed; advance reminders now follow Accent lead.
 
 An advance notification is never sent after the prayer itself. A failed
 delivery is retried twice; the panel warns if all attempts fail.
@@ -119,6 +124,6 @@ delivery is retried twice; the panel warns if all attempts fail.
   "timeFormat": "24-hour",
   "barDisplay": "Strip + countdown",
   "notifications": true,
-  "notifyBeforeMinutes": 10
+  "highlightBeforeMinutes": 15
 }
 ```

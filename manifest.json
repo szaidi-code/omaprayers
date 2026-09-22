@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.salemsayed.omaprayers",
   "name": "OmaPrayers",
-  "version": "2.3.4",
+  "version": "2.4.0",
   "author": "Salem Sayed",
   "license": "MIT",
   "description": "Prayer times in the Omarchy bar, calculated offline: a to-scale day strip or a ruled timetable, Arabic and English, selectable calculation methods and notifications.",
@@ -42,7 +42,6 @@
       "centerOnBar": true,
       "highlightBeforeMinutes": 15,
       "notifications": false,
-      "notifyBeforeMinutes": 10,
       "notificationGraceMinutes": 10
     },
     "schema": [
@@ -67,9 +66,8 @@
       { "key": "showSunrise", "type": "boolean", "label": "Show sunrise", "defaultValue": true },
       { "key": "showNightMarkers", "type": "boolean", "label": "Show midnight and thirds", "defaultValue": true },
       { "key": "centerOnBar", "type": "boolean", "label": "Center panel on bar", "defaultValue": true },
-      { "key": "highlightBeforeMinutes", "type": "integer", "label": "Accent before prayer (minutes)", "min": 0, "max": 120, "step": 5, "defaultValue": 15 },
+      { "key": "highlightBeforeMinutes", "type": "integer", "label": "Accent before prayer (minutes)", "min": 0, "max": 120, "step": 5, "defaultValue": 15, "description": "Accent lead also controls advance reminders when notifications are enabled. Zero disables advance reminders." },
       { "key": "notifications", "type": "boolean", "label": "Prayer notifications", "defaultValue": false },
-      { "key": "notifyBeforeMinutes", "type": "integer", "label": "Notify before prayer (minutes)", "min": 0, "max": 120, "step": 5, "defaultValue": 10 },
       { "key": "notificationGraceMinutes", "type": "integer", "label": "Resume notification grace (minutes)", "min": 1, "max": 60, "step": 1, "defaultValue": 10 }
     ]
   }
